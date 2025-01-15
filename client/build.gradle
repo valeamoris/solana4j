@@ -157,7 +157,7 @@ jreleaser {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = 'com.lmax'
+            groupId = 'com.valeamoris'
             artifactId = 'solana4j-json-rpc'
 
             from components.java
@@ -165,7 +165,7 @@ publishing {
             pom {
                 name = 'solana4j-json-rpc'
                 description = 'A Java library for communicating with the Solana blockchain.'
-                url = 'https://github.com/LMAX-Exchange/solana4j'
+                url = 'https://github.com/valeamoris/solana4j'
                 inceptionYear = '2023'
                 licenses {
                     license {
@@ -180,9 +180,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection = 'scm:git:https://github.com/LMAX-Exchange/solana4j.git'
-                    developerConnection = 'scm:git:ssh://github.com/LMAX-Exchange/solana4j.git'
-                    url = 'https://github.com/LMAX-Exchange/solana4j'
+                    connection = 'scm:git:https://github.com/valeamoris/solana4j.git'
+                    developerConnection = 'scm:git:ssh://github.com/valeamoris/solana4j.git'
+                    url = 'https://github.com/valeamoris/solana4j'
                 }
             }
         }

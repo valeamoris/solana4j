@@ -1,9 +1,11 @@
 package com.lmax.solana4j.client.jsonrpc;
 
 import com.lmax.solana4j.client.api.SolanaClientOptionalParams;
+import com.lmax.solana4j.client.api.SolanaClientResponse;
+import com.lmax.solana4j.client.api.TokenAccount;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,7 +16,8 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     void shouldGetTokenAccountsByOwnerWithMintDefaultOptionalParams() throws SolanaJsonRpcClientException
     {
         // 7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr - (is the owner of the token account - see shouldGetTokenAccountInfoJsonParsedEncodingOptionalParam)
-        final var response = SOLANA_API.getTokenAccountsByOwner("7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr", Map.entry("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS")).getResponse();
+        Map.Entry<String, String> mint = new AbstractMap.SimpleEntry<>("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS");
+        final List<TokenAccount> response = SOLANA_API.getTokenAccountsByOwner("7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr", mint).getResponse();
 
         assertThat(response).hasSize(2);
         assertThat(response.get(1).getPublicKey()).isEqualTo(TOKEN_ACCOUNT_1);
@@ -26,13 +29,17 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     @Test
     void shouldGetTokenAccountsByOwnerDataSliceOptionalParam() throws SolanaJsonRpcClientException
     {
+        Map.Entry<String, String> mint = new AbstractMap.SimpleEntry<>("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS");
+        Map<String, Object> dataSlice = new HashMap<>();
+        dataSlice.put("length", 10);
+        dataSlice.put("offset", 10);
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
-        optionalParams.addParam("dataSlice", Map.of("length", 10, "offset", 10));
+        optionalParams.addParam("dataSlice", dataSlice);
         optionalParams.addParam("encoding", "base64");
 
-        final var response = SOLANA_API.getTokenAccountsByOwner(
+        final List<TokenAccount> response = SOLANA_API.getTokenAccountsByOwner(
                         "7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr",
-                        Map.entry("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS"),
+                        mint,
                         optionalParams)
                 .getResponse();
 
@@ -44,12 +51,13 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     @Test
     void shouldGetTokenAccountsByOwnerBase58EncodingOptionalParam() throws SolanaJsonRpcClientException
     {
+        Map.Entry<String, String> mint = new AbstractMap.SimpleEntry<>("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS");
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("encoding", "base58");
 
-        final var response = SOLANA_API.getTokenAccountsByOwner(
+        final SolanaClientResponse<List<TokenAccount>> response = SOLANA_API.getTokenAccountsByOwner(
                 "7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr",
-                Map.entry("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS"),
+                mint,
                 optionalParams);
 
         // base58 encoding account data to be less than 128 bytes - wouldn't this always basically be the case for token accounts?
@@ -62,12 +70,13 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     @Test
     void shouldGetTokenAccountsByOwnerBase64ZstdEncodingOptionalParam() throws SolanaJsonRpcClientException
     {
+        Map.Entry<String, String> mint = new AbstractMap.SimpleEntry<>("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS");
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("encoding", "base64+zstd");
 
-        final var response = SOLANA_API.getTokenAccountsByOwner(
+        final List<TokenAccount> response = SOLANA_API.getTokenAccountsByOwner(
                         "7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr",
-                        Map.entry("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS"),
+                        mint,
                         optionalParams)
                 .getResponse();
 
@@ -80,12 +89,13 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     @Test
     void shouldGetTokenAccountsByOwnerJsonParsedEncodingOptionalParam() throws SolanaJsonRpcClientException
     {
+        Map.Entry<String, String> mint = new AbstractMap.SimpleEntry<>("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS");
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("encoding", "jsonParsed");
 
-        final var response = SOLANA_API.getTokenAccountsByOwner(
+        final List<TokenAccount> response = SOLANA_API.getTokenAccountsByOwner(
                         "7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr",
-                        Map.entry("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS"),
+                       mint,
                         optionalParams)
                 .getResponse();
 
@@ -97,9 +107,10 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     @Test
     void shouldGetTokenAccountsByOwnerWithProgramIdDefaultOptionalParams() throws SolanaJsonRpcClientException
     {
-        final var response = SOLANA_API.getTokenAccountsByOwner(
+        Map.Entry<String, String> programId = new AbstractMap.SimpleEntry<>("programId", "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+        final List<TokenAccount> response = SOLANA_API.getTokenAccountsByOwner(
                         "7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr",
-                        Map.entry("programId", "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"))
+                        programId)
                 .getResponse();
 
         assertThat(response).hasSize(2);
@@ -112,9 +123,10 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     @Test
     void shouldReturnErrorForUnrecognisedTokenMint() throws SolanaJsonRpcClientException
     {
-        final var response = SOLANA_API.getTokenAccountsByOwner(
+        Map.Entry<String, String> mint = new AbstractMap.SimpleEntry<>("mint", "FakeMintwXuSgYf3AyUgmw1vLq1XawuqxeXNwbda4Kg");
+        final SolanaClientResponse<List<TokenAccount>> response = SOLANA_API.getTokenAccountsByOwner(
                 "7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr",
-                Map.entry("mint", "FakeMintwXuSgYf3AyUgmw1vLq1XawuqxeXNwbda4Kg"));
+                mint);
 
         assertThat(response.isSuccess()).isFalse();
         assertThat(response.getError().getErrorCode()).isEqualTo(-32602L);
@@ -124,9 +136,10 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     @Test
     void shouldReturnErrorForUnrecognisedTokenProgramId() throws SolanaJsonRpcClientException
     {
-        final var response = SOLANA_API.getTokenAccountsByOwner(
+        Map.Entry<String, String> programId = new AbstractMap.SimpleEntry<>("programId", "TokenFakeNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+        final SolanaClientResponse<List<TokenAccount>>  response = SOLANA_API.getTokenAccountsByOwner(
                 "7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr",
-                Map.entry("programId", "TokenFakeNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"));
+                programId);
 
         assertThat(response.isSuccess()).isFalse();
         assertThat(response.getError().getErrorCode()).isEqualTo(-32602L);
@@ -136,7 +149,8 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     @Test
     void shouldReturnErrorForMalformedAccountDelegate() throws SolanaJsonRpcClientException
     {
-        final var response = SOLANA_API.getTokenAccountsByOwner("InvalidKeyXYZ123!@#%^&*()NotAValidPublicKey", Map.entry("mint", "FakeMintwXuSgYf3AyUgmw1vLq1XawuqxeXNwbda4Kg"));
+        Map.Entry<String, String> mint = new AbstractMap.SimpleEntry<>("mint", "FakeMintwXuSgYf3AyUgmw1vLq1XawuqxeXNwbda4Kg");
+        final SolanaClientResponse<List<TokenAccount>>  response = SOLANA_API.getTokenAccountsByOwner("InvalidKeyXYZ123!@#%^&*()NotAValidPublicKey", mint);
 
         assertThat(response.isSuccess()).isFalse();
         assertThat(response.getError().getErrorCode()).isEqualTo(-32602L);
@@ -146,12 +160,13 @@ final class GetTokenAccountsByOwnerContractTest extends SolanaClientIntegrationT
     @Test
     void shouldReturnErrorForMinContextSlotNotReached() throws SolanaJsonRpcClientException
     {
+        Map.Entry<String, String> mint = new AbstractMap.SimpleEntry<>("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS");
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("minContextSlot", 10000000000L);
 
-        final var response = SOLANA_API.getTokenAccountsByOwner(
+        final SolanaClientResponse<List<TokenAccount>>  response = SOLANA_API.getTokenAccountsByOwner(
                 "7H1itW7F72uJbaXK2R4gP7J18HrQ2M683kL9YgUeeUHr",
-                Map.entry("mint", "2tokpcExDmewsSNRKuTLVLMUseiSkEdBQWBjeQLmuFaS"),
+                mint,
                 optionalParams);
 
         assertThat(response.isSuccess()).isFalse();

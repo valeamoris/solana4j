@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -76,7 +77,9 @@ final class SolanaProgramDerivedAddress implements ProgramDerivedAddress
 
     public static ProgramDerivedAddress deriveProgramAddress(final PublicKey owner, final PublicKey programId)
     {
-        return deriveProgramAddress(List.of(owner.bytes()), programId);
+        List<byte[]> seeds = new ArrayList<>();
+        seeds.add(owner.bytes());
+        return deriveProgramAddress(seeds, programId);
     }
 
     SolanaProgramDerivedAddress(final PublicKey address, final PublicKey programAccount, final int nonce)

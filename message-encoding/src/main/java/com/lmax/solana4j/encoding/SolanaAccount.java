@@ -42,7 +42,7 @@ final class SolanaAccount implements PublicKey, Comparable<SolanaAccount>
     @Override
     public int compareTo(final SolanaAccount other)
     {
-        final var otherBytes = requireNonNull(other).bytes;
+        final byte[] otherBytes = requireNonNull(other).bytes;
 
         for (int i = 0; i < PUBLIC_KEY_LENGTH; i++)
         {

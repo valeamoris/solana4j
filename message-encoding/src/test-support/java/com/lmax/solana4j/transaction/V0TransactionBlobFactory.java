@@ -19,6 +19,7 @@ import com.lmax.solana4j.programs.TokenProgramBase;
 import com.lmax.solana4j.sign.BouncyCastleSigner;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -104,6 +105,8 @@ public class V0TransactionBlobFactory implements TransactionBlobFactory
             final List<AddressLookupTable> addressLookupTables)
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
+        List<Destination> destinations = new ArrayList<>();
+        destinations.add(destination);
         Solana.builder(buffer)
                 .v0()
                 .recent(blockhash)
@@ -111,7 +114,7 @@ public class V0TransactionBlobFactory implements TransactionBlobFactory
                         .mintTo(
                                 mint,
                                 authority,
-                                List.of(destination)))
+                                destinations))
                 .payer(payer)
                 .lookups(addressLookupTables)
                 .seal()

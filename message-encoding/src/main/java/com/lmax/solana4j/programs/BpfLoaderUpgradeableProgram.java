@@ -8,6 +8,7 @@ import com.lmax.solana4j.api.TransactionInstruction;
 import com.lmax.solana4j.encoding.SolanaEncoding;
 
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -130,6 +131,8 @@ public final class BpfLoaderUpgradeableProgram
      */
     public static ProgramDerivedAddress deriveAddress(final PublicKey program)
     {
-        return SolanaEncoding.deriveProgramAddress(List.of(program.bytes()), PROGRAM_ACCOUNT);
+        final List<byte[]> seeds = new ArrayList<>();
+        seeds.add(program.bytes());
+        return SolanaEncoding.deriveProgramAddress(seeds, PROGRAM_ACCOUNT);
     }
 }

@@ -1,6 +1,7 @@
 package com.lmax.solana4j.encoding;
 
 import com.lmax.solana4j.api.Blockhash;
+import com.lmax.solana4j.api.Message;
 import com.lmax.solana4j.api.MessageVisitor;
 import com.lmax.solana4j.api.MessageVisitor.MessageView;
 import com.lmax.solana4j.api.PublicKey;
@@ -44,11 +45,11 @@ abstract class SolanaMessageView implements MessageView
 
     static MessageView fromBuffer(final ByteBuffer buffer)
     {
-        final var formatter = new SolanaMessageFormattingCommon(buffer);
+        final SolanaMessageFormattingCommon formatter = new SolanaMessageFormattingCommon(buffer);
 
-        final var signatures = formatter.readSignatures();
-        final var transaction = buffer.slice();
-        final var first = formatter.readByte();
+        final List<ByteBuffer> signatures = formatter.readSignatures();
+        final ByteBuffer transaction = buffer.slice();
+        final byte first = formatter.readByte();
 
         boolean v0Format = false;
         boolean legacyFormat = false;
@@ -75,13 +76,13 @@ abstract class SolanaMessageView implements MessageView
         final int countAccountsSignedReadOnly = formatter.readByte() & 0xff; //convert ignoring the sign bit
         final int countAccountsUnsignedReadOnly = formatter.readByte() & 0xff;
 
-        final var staticAccounts = formatter.readStaticAccounts();
+        final List<PublicKey> staticAccounts = formatter.readStaticAccounts();
 
         // write recent-block-header or NONCE
-        final var blockhash = formatter.readBlockHash();
+        final Blockhash blockhash = formatter.readBlockHash();
 
         // write transaction instructions
-        final var instructions = formatter.readInstructions();
+        final List<MessageVisitor.InstructionView> instructions = formatter.readInstructions();
 
         if (legacyFormat)
         {
@@ -98,7 +99,7 @@ abstract class SolanaMessageView implements MessageView
         }
         else if (v0Format)
         {
-            final var accountLookups = formatter.readAccountLookups();
+            final List<MessageVisitor.AccountLookupView> accountLookups = formatter.readAccountLookups();
 
             return new SolanaV0MessageView(
                     countAccountsSigned,
@@ -146,7 +147,7 @@ abstract class SolanaMessageView implements MessageView
     public ByteBuffer signature(final PublicKey account)
     {
         int index = 0;
-        for (final var signature : signatures)
+        for (final ByteBuffer signature : signatures)
         {
             if (accountsView.staticAccounts().get(index).equals(account))
             {
@@ -172,7 +173,7 @@ abstract class SolanaMessageView implements MessageView
     @Override
     public boolean isSigner(final PublicKey account)
     {
-        final var index = accountsView.staticAccounts().indexOf(account);
+        final int index = accountsView.staticAccounts().indexOf(account);
 
         if (index == -1)
         {

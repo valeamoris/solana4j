@@ -9,6 +9,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -16,58 +17,54 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 // https://solana.com/docs/rpc/http/sendtransaction
-final class SendTransactionContractTest extends SolanaClientIntegrationTestBase
-{
+final class SendTransactionContractTest extends SolanaClientIntegrationTestBase {
     private String failPreflightCheckTransactionBlobBase64;
     private String successfulTransactionBlobBase58;
     private String successfulTransactionBlobBase64;
 
     @BeforeEach
-    void beforeEach() throws SolanaJsonRpcClientException
-    {
+    void beforeEach() throws SolanaJsonRpcClientException {
         final String latestBlockhash = SOLANA_API.getLatestBlockhash().getResponse().getBlockhashBase58();
 
+        List<Solana4jJsonRpcTestHelper.Signer> signers = new ArrayList<>();
+        signers.add(new Solana4jJsonRpcTestHelper.Signer(Solana.account(PAYER), SolanaEncoding.decodeBase58(PAYER_PRIV)));
+        signers.add(new Solana4jJsonRpcTestHelper.Signer(Solana.account(TOKEN_MINT_AUTHORITY), SolanaEncoding.decodeBase58(TOKEN_MINT_AUTHORITY_PRIV)));
         final byte[] successfulTransactionBytes = Solana4jJsonRpcTestHelper.createMintToTransactionBlob(
                 Solana.account(PAYER),
                 Solana.blockhash(SOLANA_API.getLatestBlockhash().getResponse().getBlockhashBase58()),
                 Solana.account(TOKEN_MINT),
                 Solana.account(TOKEN_MINT_AUTHORITY),
                 Solana.destination(Solana.account(TOKEN_ACCOUNT_2), 10),
-                List.of(
-                        new Solana4jJsonRpcTestHelper.Signer(Solana.account(PAYER), SolanaEncoding.decodeBase58(PAYER_PRIV)),
-                        new Solana4jJsonRpcTestHelper.Signer(Solana.account(TOKEN_MINT_AUTHORITY), SolanaEncoding.decodeBase58(TOKEN_MINT_AUTHORITY_PRIV))
-                )
+                signers
         );
 
         successfulTransactionBlobBase58 = SolanaEncoding.encodeBase58(successfulTransactionBytes);
         successfulTransactionBlobBase64 = Base64.getEncoder().encodeToString(successfulTransactionBytes);
 
+        signers = new ArrayList<>();
+        signers.add(new Solana4jJsonRpcTestHelper.Signer(Solana.account(PAYER), SolanaEncoding.decodeBase58(PAYER_PRIV)));
+        signers.add(new Solana4jJsonRpcTestHelper.Signer(Solana.account(TOKEN_ACCOUNT_OWNER), SolanaEncoding.decodeBase58(TOKEN_ACCOUNT_OWNER_PRIV)));
         final byte[] failPreflightCheckTransactionBytes = Solana4jJsonRpcTestHelper.createTransferTokenTransactionBlob(
                 Solana.account(PAYER),
                 Solana.blockhash(latestBlockhash),
                 Solana.destination(Solana.account(PAYER), 100000),
                 Solana.account(PAYER),
                 Solana.account(TOKEN_ACCOUNT_OWNER),
-                List.of(
-                        new Solana4jJsonRpcTestHelper.Signer(Solana.account(PAYER), SolanaEncoding.decodeBase58(PAYER_PRIV)),
-                        new Solana4jJsonRpcTestHelper.Signer(Solana.account(TOKEN_ACCOUNT_OWNER), SolanaEncoding.decodeBase58(TOKEN_ACCOUNT_OWNER_PRIV))
-                )
+                signers
         );
 
         failPreflightCheckTransactionBlobBase64 = Base64.getEncoder().encodeToString(failPreflightCheckTransactionBytes);
     }
 
     @Test
-    void shouldSendTransactionDefaultOptionalParams() throws SolanaJsonRpcClientException
-    {
+    void shouldSendTransactionDefaultOptionalParams() throws SolanaJsonRpcClientException {
         final SolanaClientResponse<String> response = SOLANA_API.sendTransaction(successfulTransactionBlobBase64);
 
         assertThat(response.isSuccess()).isTrue();
     }
 
     @Test
-    void shouldSendTransactionEncodingBase58OptionalParam() throws SolanaJsonRpcClientException
-    {
+    void shouldSendTransactionEncodingBase58OptionalParam() throws SolanaJsonRpcClientException {
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("encoding", "base58");
 
@@ -77,8 +74,7 @@ final class SendTransactionContractTest extends SolanaClientIntegrationTestBase
     }
 
     @Test
-    void shouldSendTransactionSkipPreflightFalseOptionalParam() throws SolanaJsonRpcClientException
-    {
+    void shouldSendTransactionSkipPreflightFalseOptionalParam() throws SolanaJsonRpcClientException {
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("skipPreflight", false);
         optionalParams.addParam("encoding", "base64");
@@ -91,8 +87,7 @@ final class SendTransactionContractTest extends SolanaClientIntegrationTestBase
 
 
     @Test
-    void shouldSendTransactionSkipPreflightTrueOptionalParam() throws SolanaJsonRpcClientException
-    {
+    void shouldSendTransactionSkipPreflightTrueOptionalParam() throws SolanaJsonRpcClientException {
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("skipPreflight", true);
         optionalParams.addParam("encoding", "base64");
@@ -106,8 +101,7 @@ final class SendTransactionContractTest extends SolanaClientIntegrationTestBase
     }
 
     @Test
-    void shouldSendTransactionSetPreflightCommitmentProcessed() throws SolanaJsonRpcClientException
-    {
+    void shouldSendTransactionSetPreflightCommitmentProcessed() throws SolanaJsonRpcClientException {
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("skipPreflight", false);
         optionalParams.addParam("preflightCommitment", Commitment.PROCESSED.name().toLowerCase());
@@ -118,8 +112,7 @@ final class SendTransactionContractTest extends SolanaClientIntegrationTestBase
     }
 
     @Test
-    void shouldSendTransactionSetPreflightCommitmentConfirmed() throws SolanaJsonRpcClientException
-    {
+    void shouldSendTransactionSetPreflightCommitmentConfirmed() throws SolanaJsonRpcClientException {
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("skipPreflight", false);
         optionalParams.addParam("preflightCommitment", Commitment.CONFIRMED.name().toLowerCase());
@@ -130,8 +123,7 @@ final class SendTransactionContractTest extends SolanaClientIntegrationTestBase
     }
 
     @Test
-    void shouldSendTransactionMaxRetriesOptionalParams() throws SolanaJsonRpcClientException
-    {
+    void shouldSendTransactionMaxRetriesOptionalParams() throws SolanaJsonRpcClientException {
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("maxRetries", 10);
 
@@ -141,13 +133,12 @@ final class SendTransactionContractTest extends SolanaClientIntegrationTestBase
     }
 
     @Test
-    void shouldReturnErrorForMinContextSlotNotReached() throws SolanaJsonRpcClientException
-    {
+    void shouldReturnErrorForMinContextSlotNotReached() throws SolanaJsonRpcClientException {
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("minContextSlot", 10000000000L);
         optionalParams.addParam("encoding", "base64");
 
-        final var response = SOLANA_API.sendTransaction(successfulTransactionBlobBase64, optionalParams);
+        final SolanaClientResponse<String> response = SOLANA_API.sendTransaction(successfulTransactionBlobBase64, optionalParams);
 
         Assertions.assertThat(response.isSuccess()).isFalse();
         Assertions.assertThat(response.getError().getErrorCode()).isEqualTo(-32016L);

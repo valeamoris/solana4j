@@ -56,7 +56,7 @@ final class SolanaMessageFormattingCommon
     void writeInstructions(final List<TransactionInstruction> transaction, final References references)
     {
         SolanaShortVec.write(transaction.size(), buffer);
-        for (final var instruction : transaction)
+        for (final TransactionInstruction instruction : transaction)
         {
             writeInstruction(instruction, references);
         }
@@ -68,7 +68,7 @@ final class SolanaMessageFormattingCommon
 
         SolanaShortVec.write(instruction.accountReferences().size(), buffer);
 
-        for (final var accref : instruction.accountReferences())
+        for (final TransactionInstruction.AccountReference accref : instruction.accountReferences())
         {
             final int indexOfAccount = references.indexOfAccount(accref.account());
             if (indexOfAccount == -1)
@@ -96,17 +96,17 @@ final class SolanaMessageFormattingCommon
 
     private InstructionView readInstruction()
     {
-        final var program = SolanaShortVec.readInt(buffer);
-        final var countAccRefs = SolanaShortVec.readInt(buffer);
-        final var accRefs = new ArrayList<Integer>();
+        final int program = SolanaShortVec.readInt(buffer);
+        final int countAccRefs = SolanaShortVec.readInt(buffer);
+        final List<Integer> accRefs = new ArrayList<Integer>();
         for (int i = 0; i < countAccRefs; i++)
         {
             accRefs.add(SolanaShortVec.readInt(buffer));
         }
-        final var countData = SolanaShortVec.readInt(buffer);
-        final var ro = buffer.asReadOnlyBuffer();
+        final int countData = SolanaShortVec.readInt(buffer);
+        final ByteBuffer ro = buffer.asReadOnlyBuffer();
         ro.limit(ro.position() + countData);
-        final var data = ro.slice();
+        final ByteBuffer data = ro.slice();
 
         buffer.position(buffer.position() + countData);
 
@@ -128,7 +128,7 @@ final class SolanaMessageFormattingCommon
     void writeAccountLookups(final List<AccountLookupEntry> accountLookups)
     {
         SolanaShortVec.write(accountLookups.size(), buffer);
-        for (final var accountLookup : accountLookups)
+        for (final AccountLookupEntry accountLookup : accountLookups)
         {
             writeAccountLookup(accountLookup);
         }
@@ -158,7 +158,7 @@ final class SolanaMessageFormattingCommon
 
     List<MessageVisitor.AccountLookupView> readAccountLookups()
     {
-        final var count = SolanaShortVec.readInt(buffer);
+        final int count = SolanaShortVec.readInt(buffer);
         final List<MessageVisitor.AccountLookupView> entries = new ArrayList<>();
 
         for (int i = 0; i < count; i++)
@@ -166,13 +166,13 @@ final class SolanaMessageFormattingCommon
             final byte[] bytes = new byte[32];
             buffer.get(bytes);
             final SolanaAccount accountLookup = new SolanaAccount(bytes);
-            final var countReadWrite = SolanaShortVec.readInt(buffer);
+            final int countReadWrite = SolanaShortVec.readInt(buffer);
             final List<Integer> readWriteIndexes = new ArrayList<>();
             for (int j = 0; j < countReadWrite; j++)
             {
                 readWriteIndexes.add(SolanaShortVec.readInt(buffer));
             }
-            final var countReadoOnly = SolanaShortVec.readInt(buffer);
+            final int countReadoOnly = SolanaShortVec.readInt(buffer);
             final List<Integer> readOnlyIndexes = new ArrayList<>();
             for (int j = 0; j < countReadoOnly; j++)
             {
@@ -196,7 +196,7 @@ final class SolanaMessageFormattingCommon
         final List<ByteBuffer> signatures = new ArrayList<>(count);
         for (int i = 0; i < count; i++)
         {
-            final var bytes = new byte[64];
+            final byte[] bytes = new byte[64];
             buffer.get(bytes);
             signatures.add(ByteBuffer.wrap(bytes));
         }
@@ -207,7 +207,7 @@ final class SolanaMessageFormattingCommon
     {
         SolanaShortVec.write(accounts.size(), buffer);
 
-        for (final var account : accounts)
+        for (final PublicKey account : accounts)
         {
             account.write(buffer);
         }

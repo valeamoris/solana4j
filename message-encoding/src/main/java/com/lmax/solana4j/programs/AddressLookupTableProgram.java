@@ -183,7 +183,10 @@ public final class AddressLookupTableProgram
      */
     public static ProgramDerivedAddress deriveAddress(final PublicKey authority, final Slot slot)
     {
-        return SolanaEncoding.deriveProgramAddress(List.of(authority.bytes(), slot.bytes()), AddressLookupTableProgram.PROGRAM_ACCOUNT);
+        final List<byte[]> seeds = new ArrayList<>();
+        seeds.add(authority.bytes());
+        seeds.add(slot.bytes());
+        return SolanaEncoding.deriveProgramAddress(seeds, AddressLookupTableProgram.PROGRAM_ACCOUNT);
     }
 
     /**

@@ -25,7 +25,7 @@ final class SolanaMessageWriterV0
 
     void write(final ByteBuffer buffer)
     {
-        final var formatter = new SolanaMessageFormattingCommon(buffer);
+        final SolanaMessageFormattingCommon formatter = new SolanaMessageFormattingCommon(buffer);
 
         // reserve signatures section
         formatter.reserveSignatures(accounts.getCountSigned());

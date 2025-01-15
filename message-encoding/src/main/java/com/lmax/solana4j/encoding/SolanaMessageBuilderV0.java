@@ -79,7 +79,7 @@ final class SolanaMessageBuilderV0 implements MessageBuilderV0
 
         final Accounts accounts = SolanaAccounts.create(instructions, payer, accountLookups);
 
-        final var writer = new SolanaMessageWriterV0(recentBlockhash, instructions, accounts);
+        final SolanaMessageWriterV0 writer = new SolanaMessageWriterV0(recentBlockhash, instructions, accounts);
 
         writer.write(buffer);
         buffer.flip();

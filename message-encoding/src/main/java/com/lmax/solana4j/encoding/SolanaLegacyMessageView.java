@@ -46,16 +46,16 @@ final class SolanaLegacyMessageView extends SolanaMessageView implements LegacyM
     @Override
     public boolean isWriter(final PublicKey account)
     {
-        final var index = accountsView.staticAccounts().indexOf(account);
+        final int index = accountsView.staticAccounts().indexOf(account);
         if (index == -1)
         {
             return false;
         }
 
-        final var isSignerWriter = index < countAccountsSigned() - countAccountsSignedReadOnly();
+        final boolean isSignerWriter = index < countAccountsSigned() - countAccountsSignedReadOnly();
         final boolean isNonSigner = index >= countAccountsSigned();
         final boolean isNonSignerReadonly = index >= (accountsView.staticAccounts().size() - countAccountsUnsignedReadOnly());
-        final var isNonSignerWriter = isNonSigner && !isNonSignerReadonly;
+        final boolean isNonSignerWriter = isNonSigner && !isNonSignerReadonly;
 
         return isSignerWriter || isNonSignerWriter;
     }

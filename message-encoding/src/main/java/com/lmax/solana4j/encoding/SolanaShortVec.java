@@ -10,7 +10,7 @@ final class SolanaShortVec
         {
             throw new UnsupportedOperationException("negative integer encoding");
         }
-        var tmpValue = value;
+        long tmpValue = value;
 
         while (tmpValue >= 0x80)
         {

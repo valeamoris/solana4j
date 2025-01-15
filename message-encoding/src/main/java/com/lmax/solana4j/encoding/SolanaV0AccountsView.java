@@ -33,7 +33,7 @@ final class SolanaV0AccountsView implements MessageVisitor.V0AccountsView
         {
             final Optional<AddressLookupTable> addressLookupTable = accountLookup.findAddressLookupTable(addressLookupTables);
 
-            if (addressLookupTable.isEmpty())
+            if (!addressLookupTable.isPresent())
             {
                 throw new IllegalArgumentException(
                         "The address lookup tables provided do not contain an address" +

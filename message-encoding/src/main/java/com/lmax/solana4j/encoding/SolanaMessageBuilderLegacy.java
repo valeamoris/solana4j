@@ -1,11 +1,6 @@
 package com.lmax.solana4j.encoding;
 
-import com.lmax.solana4j.api.Blockhash;
-import com.lmax.solana4j.api.MessageBuilderLegacy;
-import com.lmax.solana4j.api.PublicKey;
-import com.lmax.solana4j.api.SealedMessageBuilder;
-import com.lmax.solana4j.api.TransactionBuilder;
-import com.lmax.solana4j.api.TransactionInstruction;
+import com.lmax.solana4j.api.*;
 
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
@@ -70,9 +65,9 @@ final class SolanaMessageBuilderLegacy implements MessageBuilderLegacy
             throw new IllegalStateException("Solana transaction incomplete; payer has not been specified.");
         }
 
-        final var accounts = SolanaAccounts.create(instructions, payer);
+        final Accounts accounts = SolanaAccounts.create(instructions, payer);
 
-        final var writer = new SolanaMessageWriterLegacy(accounts, this.recent, this.instructions);
+        final SolanaMessageWriterLegacy writer = new SolanaMessageWriterLegacy(accounts, this.recent, this.instructions);
 
         writer.write(buffer);
         buffer.flip();

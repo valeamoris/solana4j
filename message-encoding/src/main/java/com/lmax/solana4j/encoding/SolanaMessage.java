@@ -17,7 +17,7 @@ final class SolanaMessage implements Message
     public <T> T accept(final MessageVisitor<T> visitor)
     {
         final ByteBuffer duplicate = this.buffer.duplicate();
-        final var messageView = SolanaMessageView.fromBuffer(duplicate);
+        final MessageVisitor.MessageView messageView = SolanaMessageView.fromBuffer(duplicate);
 
         return visitor.visit(messageView);
     }

@@ -18,8 +18,8 @@ final class ByteBufferPrimitiveArray
             throw new UnsupportedOperationException();
         }
 
-        final var offset = buffer.arrayOffset();
-        final var bytes = new byte[buffer.limit()];
+        final int offset = buffer.arrayOffset();
+        final byte[] bytes = new byte[buffer.limit()];
         System.arraycopy(buffer.array(), offset, bytes, 0, bytes.length);
         return bytes;
     }

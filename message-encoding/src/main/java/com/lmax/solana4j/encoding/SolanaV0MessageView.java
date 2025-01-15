@@ -56,7 +56,7 @@ final class SolanaV0MessageView extends SolanaMessageView implements MessageVisi
     @Override
     public boolean isWriter(final PublicKey account, final List<AddressLookupTable> addressLookupTables) throws IllegalArgumentException
     {
-        final var index = accountsView.accounts(addressLookupTables).indexOf(account);
+        final int index = accountsView.accounts(addressLookupTables).indexOf(account);
         if (index == -1)
         {
             return false;
@@ -86,9 +86,9 @@ final class SolanaV0MessageView extends SolanaMessageView implements MessageVisi
 
     private boolean isWriterStaticAccount(final int index)
     {
-        final var signedWriterStaticAccountsCount = countAccountsSigned() - countAccountsSignedReadOnly();
-        final var isSignerWriter = index < signedWriterStaticAccountsCount;
-        final var isNonSignerWriter =
+        final int signedWriterStaticAccountsCount = countAccountsSigned() - countAccountsSignedReadOnly();
+        final boolean isSignerWriter = index < signedWriterStaticAccountsCount;
+        final boolean isNonSignerWriter =
                 (index >= countAccountsSigned() &&
                 (index < (accountsView.staticAccounts().size() - countAccountsUnsignedReadOnly())));
 
@@ -101,7 +101,7 @@ final class SolanaV0MessageView extends SolanaMessageView implements MessageVisi
         {
             final Optional<AddressLookupTable> maybeAddressLookupTable = accountLookup.findAddressLookupTable(addressLookupTables);
 
-            if (maybeAddressLookupTable.isEmpty())
+            if (!maybeAddressLookupTable.isPresent())
             {
                 throw new IllegalArgumentException(
                         "The address lookup tables provided do not contain an address" +

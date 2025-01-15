@@ -8,14 +8,14 @@ import com.lmax.solana4j.client.api.SolanaApi;
 import com.lmax.solana4j.client.api.SolanaClientOptionalParams;
 import com.lmax.solana4j.client.api.TransactionResponse;
 import com.lmax.solana4j.encoding.SolanaEncoding;
+import okhttp3.OkHttpClient;
 
-import java.net.http.HttpClient;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
-abstract class SolanaClientIntegrationTestBase extends IntegrationTestBase
-{
+abstract class SolanaClientIntegrationTestBase extends IntegrationTestBase {
     protected static final String PAYER = "sCR7NonpU3TrqvusEiA4MAwDMLfiY1gyVPqw2b36d8V";
     protected static final String PAYER_PRIV = "C3y41jMdtQeaF9yMBRLcZhMNoWhJNTS6neAR8fdT7CBR";
 
@@ -38,85 +38,67 @@ abstract class SolanaClientIntegrationTestBase extends IntegrationTestBase
     protected static final String TOKEN_MINT_AUTHORITY = "6Q6XBfRrdf6jrK2DraQ8XnYzkGsFz9c15DdUKS5aJHoJ";
     protected static final String TOKEN_MINT_AUTHORITY_PRIV = "5DJqyvfAjjkhsT8sPNkRBmDfbhgvxeTMys8m4YKZ2u2z";
 
-    protected static final SolanaApi SOLANA_API = new SolanaJsonRpcClient(HttpClient.newHttpClient(), solanaRpcUrl, true);
+    protected static final SolanaApi SOLANA_API = new SolanaJsonRpcClient(new OkHttpClient(), solanaRpcUrl, true);
 
-    static
-    {
-        try
-        {
+    static {
+        try {
             waitForSlot(35);
 
-            final var airdropTransactionSignature = SOLANA_API.requestAirdrop(PAYER, 1000000).getResponse();
+            final String airdropTransactionSignature = SOLANA_API.requestAirdrop(PAYER, 1000000).getResponse();
             waitForTransactionSuccess(airdropTransactionSignature);
 
+            final List<Solana4jJsonRpcTestHelper.Signer> signers = new ArrayList<>();
+            signers.add(new Solana4jJsonRpcTestHelper.Signer(Solana.account(PAYER), SolanaEncoding.decodeBase58(PAYER_PRIV)));
+            signers.add(new Solana4jJsonRpcTestHelper.Signer(Solana.account(TOKEN_MINT_AUTHORITY), SolanaEncoding.decodeBase58(TOKEN_MINT_AUTHORITY_PRIV)));
             final byte[] mintToTokenAccount1TransactionBytes = Solana4jJsonRpcTestHelper.createMintToTransactionBlob(
                     Solana.account(PAYER),
                     Solana.blockhash(SOLANA_API.getLatestBlockhash().getResponse().getBlockhashBase58()),
                     Solana.account(TOKEN_MINT),
                     Solana.account(TOKEN_MINT_AUTHORITY),
                     SolanaEncoding.destination(Solana.account(TOKEN_ACCOUNT_1), 10),
-                    List.of(
-                            new Solana4jJsonRpcTestHelper.Signer(Solana.account(PAYER), SolanaEncoding.decodeBase58(PAYER_PRIV)),
-                            new Solana4jJsonRpcTestHelper.Signer(Solana.account(TOKEN_MINT_AUTHORITY), SolanaEncoding.decodeBase58(TOKEN_MINT_AUTHORITY_PRIV))
-                    )
+                    signers
             );
 
             tokenMintTransactionSignature1 = SOLANA_API.sendTransaction(Base64.getEncoder().encodeToString(mintToTokenAccount1TransactionBytes)).getResponse();
             waitForTransactionSuccess(tokenMintTransactionSignature1);
-        }
-        catch (final SolanaJsonRpcClientException e)
-        {
+        } catch (final SolanaJsonRpcClientException e) {
             throw new RuntimeException("Something went wrong in the test set-up.", e);
         }
     }
 
-    protected static TransactionResponse waitForTransactionSuccess(final String transactionSignature)
-    {
+    protected static TransactionResponse waitForTransactionSuccess(final String transactionSignature) {
         return waitForTransactionSuccess(transactionSignature, Optional.empty());
     }
 
-    protected static TransactionResponse waitForTransactionSuccess(final String transactionSignature, final Optional<SolanaClientOptionalParams> maybeOptionalParams)
-    {
+    protected static TransactionResponse waitForTransactionSuccess(final String transactionSignature, final Optional<SolanaClientOptionalParams> maybeOptionalParams) {
         return Waiter.waitForConditionMet(transactionResponseIsNotNull(transactionSignature, maybeOptionalParams));
     }
 
-    protected static void waitForTransactionFailure(final String transactionSignature, final Optional<SolanaClientOptionalParams> maybeOptionalParams)
-    {
+    protected static void waitForTransactionFailure(final String transactionSignature, final Optional<SolanaClientOptionalParams> maybeOptionalParams) {
         Waiter.waitForConditionNotMet(transactionResponseIsNotNull(transactionSignature, maybeOptionalParams));
     }
 
-    private static void waitForSlot(final int slotNumber)
-    {
+    private static void waitForSlot(final int slotNumber) {
         Waiter.waitForConditionMet(Condition.isTrue(() ->
         {
-            try
-            {
+            try {
                 return SOLANA_API.getSlot().getResponse() > slotNumber;
-            }
-            catch (SolanaJsonRpcClientException e)
-            {
+            } catch (SolanaJsonRpcClientException e) {
                 throw new RuntimeException("Something went wrong in the test setup.", e);
             }
         }));
     }
 
-    private static Condition<TransactionResponse> transactionResponseIsNotNull(final String transactionSignature, final Optional<SolanaClientOptionalParams> maybeOptionalParams)
-    {
+    private static Condition<TransactionResponse> transactionResponseIsNotNull(final String transactionSignature, final Optional<SolanaClientOptionalParams> maybeOptionalParams) {
         return Condition.isNotNull(() ->
         {
-            try
-            {
-                if (maybeOptionalParams.isPresent())
-                {
+            try {
+                if (maybeOptionalParams.isPresent()) {
                     return SOLANA_API.getTransaction(transactionSignature, maybeOptionalParams.get()).getResponse();
-                }
-                else
-                {
+                } else {
                     return SOLANA_API.getTransaction(transactionSignature).getResponse();
                 }
-            }
-            catch (SolanaJsonRpcClientException e)
-            {
+            } catch (SolanaJsonRpcClientException e) {
                 throw new RuntimeException(e);
             }
         });

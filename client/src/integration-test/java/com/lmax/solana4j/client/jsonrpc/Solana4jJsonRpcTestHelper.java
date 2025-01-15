@@ -10,6 +10,7 @@ import com.lmax.solana4j.programs.Token2022Program;
 import com.lmax.solana4j.sign.BouncyCastleSigner;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,8 @@ final class Solana4jJsonRpcTestHelper
             final List<Signer> signers)
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
+        final List<Destination> destinations = new ArrayList<>();
+        destinations.add(destination);
         Solana.builder(buffer)
                 .v0()
                 .recent(recentBlockhash)
@@ -32,7 +35,7 @@ final class Solana4jJsonRpcTestHelper
                                 .mintTo(
                                         tokenMint,
                                         tokenMintAuthority,
-                                        List.of(destination))
+                                        destinations)
                 )
                 .payer(payer)
                 .seal()

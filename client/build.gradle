@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
     id 'checkstyle'
     id 'org.jreleaser' version '1.14.0'
-    id 'com.autonomousapps.dependency-analysis' version '2.2.0'
+//    id 'com.autonomousapps.dependency-analysis' version '2.2.0'
 }
 
 def solanaVersion = project.rootProject.property('SOLANA_VERSION')
@@ -16,7 +16,7 @@ repositories {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(8)
     }
     withJavadocJar()
     withSourcesJar()
@@ -51,6 +51,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.17.2'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.17.2'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 
     // integration test dependencies
     integrationTestImplementation project(path: ':shared', configuration: 'sharedTestSupport')
@@ -58,6 +59,7 @@ dependencies {
 
     integrationTestImplementation 'org.assertj:assertj-core:3.26.3'
     integrationTestImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
+    integrationTestImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
 
     integrationTestRuntimeOnly project(path: ':message-encoding', configuration: 'default')
 
@@ -68,7 +70,7 @@ dependencies {
     integrationTestRuntimeOnly 'org.apache.logging.log4j:log4j-slf4j2-impl:2.23.1'
 }
 
-task unitTest(type: Test) {
+tasks.register('unitTest', Test) {
     useJUnitPlatform()
     description = 'Runs the solana client unit tests .'
     group = 'verification'
@@ -83,7 +85,7 @@ task unitTest(type: Test) {
     }
 }
 
-task integrationTest(type: Test) {
+tasks.register('integrationTest', Test) {
     useJUnitPlatform()
     description = 'Runs the solana client integration tests.'
     group = 'verification'

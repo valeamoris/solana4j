@@ -76,7 +76,7 @@ final class SolanaAccounts implements Accounts
 
     static Accounts create(final List<TransactionInstruction> instructions, final PublicKey payer)
     {
-        return create(instructions, payer, List.of());
+        return create(instructions, payer, new ArrayList<>());
     }
 
     static Accounts create(
@@ -84,12 +84,12 @@ final class SolanaAccounts implements Accounts
             final PublicKey payer,
             final List<AddressLookupTable> addressLookupTables)
     {
-        final var payerReference = new SolanaAccountReference(payer, true, true, false);
-        final var allAccountReferences = mergeAccountReferences(payerReference, instructions);
+        final SolanaAccountReference payerReference = new SolanaAccountReference(payer, true, true, false);
+        final List<TransactionInstruction.AccountReference> allAccountReferences = mergeAccountReferences(payerReference, instructions);
 
-        final var accountLookups = AccountLookups.create(allAccountReferences, addressLookupTables);
+        final AccountLookups accountLookups = AccountLookups.create(allAccountReferences, addressLookupTables);
 
-        final var staticAccountReferences = allAccountReferences
+        final List<TransactionInstruction.AccountReference> staticAccountReferences = allAccountReferences
                 .stream()
                 .filter(accountReference -> !accountLookups.getAccountsInLookupTables().contains(accountReference.account()))
                 .collect(Collectors.toList());
@@ -97,7 +97,7 @@ final class SolanaAccounts implements Accounts
         int countSigned = 0;
         int countSignedReadOnly = 0;
         int countUnsignedReadOnly = 0;
-        for (final var accountReference : staticAccountReferences)
+        for (final TransactionInstruction.AccountReference accountReference : staticAccountReferences)
         {
             if (accountReference.isSigner())
             {
@@ -132,7 +132,7 @@ final class SolanaAccounts implements Accounts
         final List<TransactionInstruction.AccountReference> allAccountReferences = concatAccountReferences(payerReference, instructions);
 
         final LinkedHashMap<PublicKey, TransactionInstruction.AccountReference> staticAccountReferences = new LinkedHashMap<>();
-        for (final var accountReference : allAccountReferences)
+        for (final TransactionInstruction.AccountReference accountReference : allAccountReferences)
         {
             if (staticAccountReferences.containsKey(accountReference.account()))
             {
@@ -151,7 +151,7 @@ final class SolanaAccounts implements Accounts
             final TransactionInstruction.AccountReference payerReference,
             final List<TransactionInstruction> instructions)
     {
-        final var cmp = Comparator
+        final Comparator<TransactionInstruction.AccountReference> cmp = Comparator
                 .<TransactionInstruction.AccountReference, Integer>comparing(r1 -> r1.isSigner() ? -1 : 1)
                 .thenComparing(r -> r.isWriter() ? -1 : 1);
 

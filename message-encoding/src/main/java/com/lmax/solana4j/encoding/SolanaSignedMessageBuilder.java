@@ -44,9 +44,9 @@ final class SolanaSignedMessageBuilder implements SignedMessageBuilder
                 this.transaction = transaction;
             }
         }
-        final var message = new SolanaMessageReader(buffer.duplicate()).read();
+        final SolanaMessage message = new SolanaMessageReader(buffer.duplicate()).read();
 
-        final var info = message.accept(
+        final SigningInfo info = message.accept(
                 message1 -> new SigningInfo(
                         message1.staticAccounts().subList(0, message1.countAccountsSigned()),
                         message1.transaction()));
@@ -57,9 +57,9 @@ final class SolanaSignedMessageBuilder implements SignedMessageBuilder
         {
             throw new IllegalStateException("message is malformed");
         }
-        for (final var account : info.signatories)
+        for (final PublicKey account : info.signatories)
         {
-            final var signer = signers.get(account);
+            final ByteBufferSigner signer = signers.get(account);
             if (signer != null)
             {
                 final ByteBuffer signatureBuffer = signingBufferView.duplicate();

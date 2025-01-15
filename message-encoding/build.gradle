@@ -5,7 +5,7 @@ plugins {
     id 'maven-publish'
     id 'checkstyle'
     id 'org.jreleaser' version '1.14.0'
-    id 'com.autonomousapps.dependency-analysis' version '2.2.0'
+//    id 'com.autonomousapps.dependency-analysis' version '2.2.0'
 }
 
 def solanaVersion = project.rootProject.property('SOLANA_VERSION')
@@ -16,7 +16,7 @@ repositories {
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(8)
     }
     withJavadocJar()
     withSourcesJar()

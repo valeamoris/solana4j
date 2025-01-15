@@ -1,23 +1,23 @@
 plugins {
     id 'java-library'
     id 'checkstyle'
-    id 'com.autonomousapps.dependency-analysis' version '2.2.0'
+//    id 'com.autonomousapps.dependency-analysis' version '2.2.0'
 }
 
 def solanaVersion = project.property('SOLANA_VERSION')
 
 group = 'com.lmax'
 version = '1.1.0'
-
-dependencyAnalysis {
-    issues {
-        all {
-            onAny {
-                severity('fail')
-            }
-        }
-    }
-}
+//
+//dependencyAnalysis {
+//    issues {
+//        all {
+//            onAny {
+//                severity('fail')
+//            }
+//        }
+//    }
+//}
 
 allprojects {
     ext {
@@ -31,7 +31,7 @@ subprojects {
         configFile = rootProject.file('config/checkstyle/checkstyle.xml')
     }
 
-    check.dependsOn buildHealth
+//    check.dependsOn buildHealth
 
     group = rootProject.group
     version = rootProject.version

@@ -8,8 +8,8 @@ public class KeyPairGenerator
 {
     public static KeyPair generateKeyPair()
     {
-        final var privateKey = new byte[32];
-        final var publicKey = new byte[32];
+        final byte[] privateKey = new byte[32];
+        final byte[] publicKey = new byte[32];
         Ed25519.generatePrivateKey(new SecureRandom(), privateKey);
         Ed25519.generatePublicKey(privateKey, 0, publicKey, 0);
 

@@ -497,7 +497,7 @@ public abstract class TokenProgramBase
             final AuthorityType authorityType
     )
     {
-        final var newAuthorityBuffer = ByteBuffer.allocate(PublicKey.PUBLIC_KEY_LENGTH);
+        final ByteBuffer newAuthorityBuffer = ByteBuffer.allocate(PublicKey.PUBLIC_KEY_LENGTH);
         newAuthority.write(newAuthorityBuffer);
 
         return Solana.instruction(ib ->
@@ -508,7 +508,7 @@ public abstract class TokenProgramBase
                             .put((byte) SET_AUTHORITY_INSTRUCTION)
                             .put(authorityType.value)
                             .put((byte) 1)
-                            .put(newAuthorityBuffer.flip())
+                            .put((ByteBuffer) newAuthorityBuffer.flip())
                     )
                     .account(tokenAccount, false, true)
                     .account(oldAuthority, signers.isEmpty(), false);

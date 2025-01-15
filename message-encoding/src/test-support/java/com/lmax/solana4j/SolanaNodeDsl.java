@@ -27,9 +27,9 @@ import com.lmax.solana4j.programs.SystemProgram;
 import com.lmax.solana4j.programs.TokenProgramBase;
 import com.lmax.solana4j.store.TestContext;
 import com.lmax.solana4j.store.TestDataType;
+import okhttp3.OkHttpClient;
 import org.bouncycastle.util.encoders.Base64;
 
-import java.net.http.HttpClient;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,7 +50,7 @@ public class SolanaNodeDsl
 
     public SolanaNodeDsl(final String rpcUrl)
     {
-        this.solanaDriver = new SolanaDriver(SolanaClient.create(HttpClient.newHttpClient(), rpcUrl));
+        this.solanaDriver = new SolanaDriver(SolanaClient.create(new OkHttpClient(), rpcUrl));
         this.testContext = new TestContext();
     }
 
@@ -678,6 +678,9 @@ public class SolanaNodeDsl
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        List<TestKeyPair> signers = new ArrayList<>();
+        signers.add(payer);
+        signers.add(tokenAccountOldAuthority);
         final String transactionSignature = solanaDriver.setTokenAccountAuthority(
                 tokenProgram,
                 tokenAccount.getSolana4jPublicKey(),
@@ -685,7 +688,7 @@ public class SolanaNodeDsl
                 tokenAccountNewAuthority.getSolana4jPublicKey(),
                 authorityType,
                 payer,
-                List.of(payer, tokenAccountOldAuthority),
+                signers,
                 addressLookupTables);
 
         Waiter.waitForConditionMet(Condition.isNotNull(() -> solanaDriver.getTransactionResponse(transactionSignature)));
@@ -757,12 +760,15 @@ public class SolanaNodeDsl
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        List<TestKeyPair> signers = new ArrayList<>();
+        signers.add(payer);
+        signers.add(new TestKeyPair(oldUpgradeAuthorityPublicKey, oldUpgradeAuthorityPrivateKey));
         final String transactionSignature = solanaDriver.setBpfUpgradeableProgramUpgradeAuthority(
                 Solana.account(bpfUpgradeableProgram),
                 Solana.account(oldUpgradeAuthorityPublicKey),
                 Solana.account(newUpgradeAuthority),
                 payer.getSolana4jPublicKey(),
-                List.of(payer, new TestKeyPair(oldUpgradeAuthorityPublicKey, oldUpgradeAuthorityPrivateKey)),
+                signers,
                 addressLookupTables);
 
         Waiter.waitForConditionMet(Condition.isNotNull(() -> solanaDriver.getTransactionResponse(transactionSignature)));

@@ -3,7 +3,7 @@ FROM --platform=linux/aarch64 ubuntu:20.04
 ARG SOLANA_VERSION
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN ln -fs /usr/share/zoneinfo/Etc/UTC /etc/localtime \
+RUN ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && apt update \
     && apt install -y tzdata \
     && dpkg-reconfigure --frontend noninteractive tzdata \

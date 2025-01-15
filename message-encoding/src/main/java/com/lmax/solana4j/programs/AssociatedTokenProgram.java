@@ -8,6 +8,7 @@ import com.lmax.solana4j.api.TransactionInstruction;
 import com.lmax.solana4j.encoding.SolanaEncoding;
 
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.lmax.solana4j.encoding.SysVar.RENT;
@@ -165,8 +166,12 @@ public final class AssociatedTokenProgram
         requireNonNull(tokenProgramAccount, "The token program public key must be specified, but was null");
         requireNonNull(mint, "The mint public key must be specified, but was null");
 
+        final List<byte[]> seeds = new ArrayList<>();
+        seeds.add(owner.bytes());
+        seeds.add(tokenProgramAccount.bytes());
+        seeds.add(mint.bytes());
         return SolanaEncoding.deriveProgramAddress(
-                List.of(owner.bytes(), tokenProgramAccount.bytes(), mint.bytes()),
+                seeds,
                 ASSOCIATED_TOKEN_PROGRAM_ACCOUNT
         );
     }

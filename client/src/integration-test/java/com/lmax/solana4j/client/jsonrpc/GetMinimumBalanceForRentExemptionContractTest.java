@@ -2,6 +2,7 @@ package com.lmax.solana4j.client.jsonrpc;
 
 import com.lmax.solana4j.client.api.Commitment;
 import com.lmax.solana4j.client.api.SolanaClientOptionalParams;
+import com.lmax.solana4j.client.api.SolanaClientResponse;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
@@ -9,21 +10,18 @@ import java.util.Locale;
 import static org.assertj.core.api.Assertions.assertThat;
 
 // https://solana.com/docs/rpc/http/getminimumbalanceforrentexemption
-final class GetMinimumBalanceForRentExemptionContractTest extends SolanaClientIntegrationTestBase
-{
+final class GetMinimumBalanceForRentExemptionContractTest extends SolanaClientIntegrationTestBase {
     @Test
-    void shouldGetMinimumBalanceForRentExemption() throws SolanaJsonRpcClientException
-    {
+    void shouldGetMinimumBalanceForRentExemption() throws SolanaJsonRpcClientException {
         assertThat(SOLANA_API.getMinimumBalanceForRentExemption(1000).getResponse()).isGreaterThan(0L);
     }
 
     @Test
-    void shouldReturnErrorForNegativeSize() throws SolanaJsonRpcClientException
-    {
+    void shouldReturnErrorForNegativeSize() throws SolanaJsonRpcClientException {
         final SolanaClientOptionalParams optionalParams = new SolanaJsonRpcClientOptionalParams();
         optionalParams.addParam("commitment", Commitment.PROCESSED.name().toLowerCase(Locale.UK));
 
-        final var response = SOLANA_API.getMinimumBalanceForRentExemption(-1, optionalParams);
+        final SolanaClientResponse<Long> response = SOLANA_API.getMinimumBalanceForRentExemption(-1, optionalParams);
 
         assertThat(response.isSuccess()).isFalse();
         assertThat(response.getError().getErrorCode()).isEqualTo(-32602L);

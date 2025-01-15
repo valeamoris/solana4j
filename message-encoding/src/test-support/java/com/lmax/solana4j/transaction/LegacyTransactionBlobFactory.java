@@ -1,13 +1,7 @@
 package com.lmax.solana4j.transaction;
 
 import com.lmax.solana4j.Solana;
-import com.lmax.solana4j.api.AddressLookupTable;
-import com.lmax.solana4j.api.Blockhash;
-import com.lmax.solana4j.api.Destination;
-import com.lmax.solana4j.api.ProgramDerivedAddress;
-import com.lmax.solana4j.api.PublicKey;
-import com.lmax.solana4j.api.SignedMessageBuilder;
-import com.lmax.solana4j.api.Slot;
+import com.lmax.solana4j.api.*;
 import com.lmax.solana4j.domain.TestKeyPair;
 import com.lmax.solana4j.domain.TokenProgram;
 import com.lmax.solana4j.encoding.SolanaEncoding;
@@ -20,6 +14,7 @@ import com.lmax.solana4j.programs.TokenProgramBase;
 import com.lmax.solana4j.sign.BouncyCastleSigner;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -41,15 +36,16 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
 
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(SystemProgram.transfer(
+                from,
+                to,
+                amount)
+        );
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        SystemProgram.transfer(
-                                from,
-                                to,
-                                amount)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -73,17 +69,17 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
 
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(tokenProgram.getTokenProgram().transfer(
+                from,
+                to,
+                owner,
+                amount,
+                signers.stream().map(TestKeyPair::getSolana4jPublicKey).collect(Collectors.toList())));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        tokenProgram.getTokenProgram().transfer(
-                                from,
-                                to,
-                                owner,
-                                amount,
-                                signers.stream().map(TestKeyPair::getSolana4jPublicKey).collect(Collectors.toList()))
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -105,15 +101,15 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
             final List<AddressLookupTable> addressLookupTables)
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(tokenProgram.getTokenProgram().mintTo(
+                mint,
+                authority,
+                destination));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        tokenProgram.getTokenProgram().mintTo(
-                                mint,
-                                authority,
-                                destination)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -138,22 +134,22 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
             final List<AddressLookupTable> addressLookupTables)
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(SystemProgram.createAccount(
+                payer,
+                account,
+                rentExemption,
+                accountSpan,
+                tokenProgram.getProgram()));
+        instructions.add(tokenProgram.getTokenProgram().initializeMint(
+                account,
+                (byte) decimals,
+                mintAuthority,
+                Optional.of(freezeAuthority)));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        SystemProgram.createAccount(
-                                payer,
-                                account,
-                                rentExemption,
-                                accountSpan,
-                                tokenProgram.getProgram()),
-                        tokenProgram.getTokenProgram().initializeMint(
-                                account,
-                                (byte) decimals,
-                                mintAuthority,
-                                Optional.of(freezeAuthority))
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -177,21 +173,21 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
             final List<AddressLookupTable> addressLookupTables)
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(SystemProgram.createAccount(
+                payer,
+                account,
+                rentExemption,
+                accountSpan,
+                tokenProgram.getProgram()));
+        instructions.add(tokenProgram.getTokenProgram().initializeMultisig(
+                account,
+                multiSigSigners,
+                requiredSigners));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        SystemProgram.createAccount(
-                                payer,
-                                account,
-                                rentExemption,
-                                accountSpan,
-                                tokenProgram.getProgram()),
-                        tokenProgram.getTokenProgram().initializeMultisig(
-                                account,
-                                multiSigSigners,
-                                requiredSigners)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -213,18 +209,18 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
             final List<AddressLookupTable> addressLookupTables)
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(SystemProgram.createAccount(
+                authority,
+                nonce,
+                rentExemption,
+                accountSpan,
+                SYSTEM_PROGRAM_ACCOUNT));
+        instructions.add(SystemProgram.nonceInitialize(nonce, authority));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        SystemProgram.createAccount(
-                                authority,
-                                nonce,
-                                rentExemption,
-                                accountSpan,
-                                SYSTEM_PROGRAM_ACCOUNT),
-                        SystemProgram.nonceInitialize(nonce, authority)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -248,21 +244,21 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
             final List<AddressLookupTable> addressLookupTables)
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(SystemProgram.createAccount(
+                payer,
+                account,
+                rentExemption,
+                accountSpan,
+                tokenProgram.getProgram()));
+        instructions.add(tokenProgram.getTokenProgram().initializeAccount(
+                account,
+                mint,
+                owner));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        SystemProgram.createAccount(
-                                payer,
-                                account,
-                                rentExemption,
-                                accountSpan,
-                                tokenProgram.getProgram()),
-                        tokenProgram.getTokenProgram().initializeAccount(
-                                account,
-                                mint,
-                                owner)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -283,16 +279,16 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
 
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add( AddressLookupTableProgram.createLookupTable(
+                programDerivedAddress,
+                authority,
+                payer,
+                recentSlot));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        AddressLookupTableProgram.createLookupTable(
-                                programDerivedAddress,
-                                authority,
-                                payer,
-                                recentSlot)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -314,16 +310,16 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
 
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(AddressLookupTableProgram.extendLookupTable(
+                lookupAddress,
+                authority,
+                payer,
+                addressesToAdd));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        AddressLookupTableProgram.extendLookupTable(
-                                lookupAddress,
-                                authority,
-                                payer,
-                                addressesToAdd)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -344,12 +340,12 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
 
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(SystemProgram.nonceAdvance(account, authority));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        SystemProgram.nonceAdvance(account, authority)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -373,18 +369,18 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
 
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(AssociatedTokenProgram.createAssociatedTokenAccount(
+                associatedTokenAddress,
+                mint,
+                owner,
+                payer,
+                tokenProgram.getProgram(),
+                idempotent));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        AssociatedTokenProgram.createAssociatedTokenAccount(
-                                associatedTokenAddress,
-                                mint,
-                                owner,
-                                payer,
-                                tokenProgram.getProgram(),
-                                idempotent)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -408,17 +404,17 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
 
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(tokenProgram.getTokenProgram().setAuthority(
+                tokenAccount,
+                tokenAccountNewAuthority,
+                tokenAccountOldAuthority,
+                signers.stream().map(TestKeyPair::getSolana4jPublicKey).collect(Collectors.toList()),
+                authorityType));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        tokenProgram.getTokenProgram().setAuthority(
-                                tokenAccount,
-                                tokenAccountNewAuthority,
-                                tokenAccountOldAuthority,
-                                signers.stream().map(TestKeyPair::getSolana4jPublicKey).collect(Collectors.toList()),
-                                authorityType)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer.getSolana4jPublicKey())
                 .seal()
                 .unsigned()
@@ -433,13 +429,13 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
 
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(ComputeBudgetProgram.setComputeUnitLimit(computeUnitLimit));
+        instructions.add(ComputeBudgetProgram.setComputeUnitPrice(computeUnitPrice));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        ComputeBudgetProgram.setComputeUnitLimit(computeUnitLimit),
-                        ComputeBudgetProgram.setComputeUnitPrice(computeUnitPrice)
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()
@@ -461,15 +457,15 @@ public class LegacyTransactionBlobFactory implements TransactionBlobFactory
     {
         final ByteBuffer buffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE);
 
+        List<TransactionInstruction> instructions = new ArrayList<>();
+        instructions.add(BpfLoaderUpgradeableProgram.setUpgradeAuthority(
+                program,
+                oldUpgradeAuthority,
+                Optional.of(newUpgradeAuthority)));
         Solana.builder(buffer)
                 .legacy()
                 .recent(blockhash)
-                .prebuiltInstructions(List.of(
-                        BpfLoaderUpgradeableProgram.setUpgradeAuthority(
-                                program,
-                                oldUpgradeAuthority,
-                                Optional.of(newUpgradeAuthority))
-                ))
+                .prebuiltInstructions(instructions)
                 .payer(payer)
                 .seal()
                 .unsigned()

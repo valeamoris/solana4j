@@ -7,7 +7,7 @@ final class Result<L, R>
     private final L error;
     private final R success;
 
-    private Result(final L error, final R success)
+    public Result(final L error, final R success)
     {
         this.error = error;
         this.success = success;
@@ -47,7 +47,7 @@ final class Result<L, R>
     {
         if (isSuccess())
         {
-            final var intermediateResult = onSuccess.apply(success);
+            final Result<L, S> intermediateResult = onSuccess.apply(success);
 
             if (intermediateResult.isError())
             {

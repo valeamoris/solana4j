@@ -7,6 +7,7 @@ import com.lmax.solana4j.encoding.SolanaEncoding;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -62,8 +63,12 @@ public final class AssociatedTokenMetadataProgram
      */
     public static ProgramDerivedAddress deriveAddress(final PublicKey mint)
     {
+        final List<byte[]> seeds = new ArrayList<>();
+        seeds.add(METADATA_MAGIC_STRING);
+        seeds.add(ASSOCIATED_TOKEN_METADATA_PROGRAM_ID);
+        seeds.add(mint.bytes());
         return SolanaEncoding.deriveProgramAddress(
-                List.of(METADATA_MAGIC_STRING, ASSOCIATED_TOKEN_METADATA_PROGRAM_ID, mint.bytes()),
+                seeds,
                 ASSOCIATED_TOKEN_METADATA_PROGRAM_ACCOUNT
         );
     }

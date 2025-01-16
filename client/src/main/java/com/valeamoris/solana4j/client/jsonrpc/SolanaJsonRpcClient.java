@@ -28,7 +28,7 @@ import static com.valeamoris.solana4j.client.jsonrpc.SolanaJsonRpcClientOptional
  * This client provides methods to perform various operations such as requesting airdrops, sending transactions,
  * retrieving account information, and more.
  */
-public final class SolanaJsonRpcClient implements SolanaApi {
+public class SolanaJsonRpcClient implements SolanaApi {
     private final String rpcUrl;
     private final OkHttpClient httpClient;
     private final SolanaCodec solanaCodec;

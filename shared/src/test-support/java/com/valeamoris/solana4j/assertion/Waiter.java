@@ -1,5 +1,8 @@
 package com.valeamoris.solana4j.assertion;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -11,6 +14,7 @@ public final class Waiter
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
     private static final Duration DEFAULT_POLLING_INTERVAL = Duration.ofSeconds(3);
     private static final Waiter DEFAULT_WAITER = new Waiter(DEFAULT_INITIAL_DELAY, DEFAULT_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+    private static final Logger log = LoggerFactory.getLogger(Waiter.class);
 
     private final Duration initialDelay;
     private final Duration timeout;

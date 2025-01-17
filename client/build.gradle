@@ -60,6 +60,7 @@ dependencies {
     integrationTestImplementation 'org.assertj:assertj-core:3.26.3'
     integrationTestImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
     integrationTestImplementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    integrationTestImplementation 'org.apache.logging.log4j:log4j-slf4j2-impl:2.23.1'
 
     integrationTestRuntimeOnly project(path: ':message-encoding', configuration: 'default')
 

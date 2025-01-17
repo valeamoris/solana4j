@@ -317,4 +317,17 @@ public interface SolanaApi
      * @throws SolanaJsonRpcClientException if the request fails.
      */
     SolanaClientResponse<SimulateTransactionResponse> simulateTransaction(String transaction, SolanaClientOptionalParams optionalParams) throws SolanaJsonRpcClientException;
+
+    /**
+     * Returns identity and transaction information about a confirmed block in the ledger
+     * @param slot slot number
+     */
+    SolanaClientResponse<BlockResponse> getBlock(long slot) throws SolanaJsonRpcClientException;
+
+    /**
+     * Returns identity and transaction information about a confirmed block in the ledger, with optional parameters
+     * @param slot slot number
+     * @param optionalParams additional parameters for getBlock.
+     */
+    SolanaClientResponse<BlockResponse> getBlock(long slot, SolanaClientOptionalParams optionalParams) throws SolanaJsonRpcClientException;
 }

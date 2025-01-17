@@ -2,20 +2,11 @@ package com.valeamoris.solana4j.client.jsonrpc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.valeamoris.solana4j.client.api.AccountInfo;
-import com.valeamoris.solana4j.client.api.Blockhash;
-import com.valeamoris.solana4j.client.api.SignatureForAddress;
-import com.valeamoris.solana4j.client.api.SignatureStatus;
-import com.valeamoris.solana4j.client.api.SimulateTransactionResponse;
-import com.valeamoris.solana4j.client.api.SolanaApi;
-import com.valeamoris.solana4j.client.api.SolanaClientOptionalParams;
-import com.valeamoris.solana4j.client.api.SolanaClientResponse;
-import com.valeamoris.solana4j.client.api.TokenAccount;
-import com.valeamoris.solana4j.client.api.TokenAmount;
-import com.valeamoris.solana4j.client.api.TransactionResponse;
+import com.valeamoris.solana4j.client.api.*;
 import okhttp3.*;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -313,6 +304,22 @@ public class SolanaJsonRpcClient implements SolanaApi {
                 optionalParams.getParams());
     }
 
+    @Override
+    public SolanaClientResponse<BlockResponse> getBlock(long slot) throws SolanaJsonRpcClientException {
+        return queryForObject(new TypeReference<RpcWrapperDTO<BlockResponseDTO>>() {
+                              },
+                dto -> dto, "getBlock", slot,
+                defaultOptionalParams());
+    }
+
+    @Override
+    public SolanaClientResponse<BlockResponse> getBlock(long slot, SolanaClientOptionalParams optionalParams) throws SolanaJsonRpcClientException {
+        return queryForObject(new TypeReference<RpcWrapperDTO<BlockResponseDTO>>() {
+                              },
+                dto -> dto, "getBlock", slot,
+                optionalParams.getParams());
+    }
+
     private <S, T> SolanaClientResponse<S> queryForObject(
             final TypeReference<RpcWrapperDTO<T>> type,
             final Function<T, S> dtoMapper,
@@ -355,10 +362,11 @@ public class SolanaJsonRpcClient implements SolanaApi {
             final Response httpResponse) throws SolanaJsonRpcClientException {
         try {
             final ResponseBody body = httpResponse.body();
-
+            // copy body to avoid closing it
+            final byte[] bytes = body != null ? body.bytes() : null;
             RpcWrapperDTO<T> rpcResult = new RpcWrapperDTO<>(null, null, 0, null);
             if (body != null) {
-                rpcResult = solanaCodec.decodeResponse(body.bytes(), type);
+                rpcResult = solanaCodec.decodeResponse(bytes, type);
             }
             if (rpcResult.getError() != null) {
                 return Result.error(new SolanaJsonRpcClientError(rpcResult.getError().getCode(), rpcResult.getError().getMessage()));

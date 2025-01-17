@@ -9,6 +9,8 @@ import com.valeamoris.solana4j.client.api.SolanaClientOptionalParams;
 import com.valeamoris.solana4j.client.api.TransactionResponse;
 import com.valeamoris.solana4j.encoding.SolanaEncoding;
 import okhttp3.OkHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -16,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 
 abstract class SolanaClientIntegrationTestBase extends IntegrationTestBase {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolanaClientIntegrationTestBase.class);
+
     protected static final String PAYER = "sCR7NonpU3TrqvusEiA4MAwDMLfiY1gyVPqw2b36d8V";
     protected static final String PAYER_PRIV = "C3y41jMdtQeaF9yMBRLcZhMNoWhJNTS6neAR8fdT7CBR";
 
@@ -82,7 +86,8 @@ abstract class SolanaClientIntegrationTestBase extends IntegrationTestBase {
         Waiter.waitForConditionMet(Condition.isTrue(() ->
         {
             try {
-                return SOLANA_API.getSlot().getResponse() > slotNumber;
+                final long slot = SOLANA_API.getSlot().getResponse();
+                return  slot > slotNumber;
             } catch (SolanaJsonRpcClientException e) {
                 throw new RuntimeException("Something went wrong in the test setup.", e);
             }
